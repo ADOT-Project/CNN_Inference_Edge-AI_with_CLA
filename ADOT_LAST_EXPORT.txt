@@ -1,6 +1,6 @@
-The model files in this folder were copied by ADOT from the last export; every export overwrites them.
-date    : 2026-11-03 22:37:45
-export  : C:\Users\Canberk_Kaplan\AppData\Local\Programs\ADOT\app\export\dataset__eval_validated_on_test__fixed12ch__20261103_223334
+Bu klasordeki model dosyalari ADOT tarafindan son export'tan kopyalandi -- her egitimde uzerine yazilir.
+tarih   : 2026-11-03 21:42:17
+export  : C:\Users\Canberk_Kaplan\Desktop\Bildiri_SIU_2026\Model_Trainig_For_Edge_AI\export\dataset__eval_validated_on_test__fixed12ch__20261103_213430
 dataset : dataset.npz
-channels: 12 (fixed, comparison)
-files   : application/include/definitions.h, application/include/weights.h, main.c, application/include/cla_pipeline_config.h, application/include/feature_tables.h, application/include/test_inputs.h, application/include/golden_vectors.h
+kanal   : 12 (sabit, karsilastirma)
+dosyalar: application/include/definitions.h, application/include/weights.h, main.c, application/include/cla_pipeline_config.h, application/include/feature_tables.h, application/include/test_inputs.h, application/include/golden_vectors.h
