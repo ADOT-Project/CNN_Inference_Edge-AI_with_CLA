@@ -1,32 +1,18 @@
+/**
+ * @file golden_vector_normal.h
+ * @brief Golden ADC window, MIMII fan normal class (held-out).
+ * @details Source: MIMII 6_dB_fan id_06/normal/00000299.wav, samples 71552:88448.
+ */
 #ifndef GOLDEN_VECTOR_NORMAL_H
 #define GOLDEN_VECTOR_NORMAL_H
 
 #include <stdint.h>
 
-// MIMII 6_dB_fan, held-out TEST dosyasi (9 kanalli modelin egitiminde yok).
-// mu/sigma: folds_mimii/dataset.npz. Beklenen sinif: 0 (normal).
-// Float modelin bu ADC dilimindeki logitleri: [13.032, -14.571].
-// INT16 firmware'de fResult[] = logit x 256 (INPUT_SCALE). Ayni C kodu
-// PC'de calistirildi: fResult = [3323.9, -3716.9] -> kartta da buna yakin
-// cikmali; g_predicted_class beklenen sinifa esit olmali.
-// Kaynak: C:/Users/Canberk_Kaplan/Desktop/Sound_Analyses/6_dB_fan/fan/id_06/normal/00000299.wav (ornek 71552:88448)
-// librosa-vs-manuel (saf algoritma) farki: 2.12e-05
-// 12-bit kuantalamanin ekledigi sapma (bilgi): 4.01e-01
-//   ^ bu, temiz sinyale gore olculen kuantalama gurultusudur.
-//     golden_expected ASAGIDAKI adc kodlarindan hesaplandi, yani
-//     C kodunuz bu degerlere <1e-3 ile UYMALIDIR.
-// top_db kirpmasi bu dilimde: devre disi
-//
-// golden_adc[] = simule edilmis 12-bit ADC kodlari (0..4095,
-// orta-rail=2048 bias), FEAT_ADC_* sabitleriyle uyumlu.
-// C tarafinda: tamponun ortalamasini cikar, FEAT_ADC_SCALE ile
-// olcekle, MFCC zincirinden gecir, golden_expected ile karsilastir.
-// Hedef: max fark < 1e-3.
+#define GOLDEN_N_SAMPLES_NORMAL 16896 /**< Raw ADC samples. */
+#define GOLDEN_N_FRAMES_NORMAL  65 /**< MFCC frames. */
+#define GOLDEN_N_OUT_NORMAL     12 /**< Coefficients per frame. */
 
-#define GOLDEN_N_SAMPLES_NORMAL 16896
-#define GOLDEN_N_FRAMES_NORMAL  65
-#define GOLDEN_N_OUT_NORMAL     12
-
+/** @brief 12-bit ADC codes, mid-rail 2048. */
 static const uint16_t golden_adc_normal[GOLDEN_N_SAMPLES_NORMAL] = {
     2038, 2044, 2048, 2050, 2055, 2060, 2064, 2067, 2068, 2068, 2063, 2057, 2053, 2050, 2050, 2049,
     2049, 2050, 2050, 2046, 2041, 2043, 2045, 2046, 2048, 2048, 2046, 2046, 2048, 2044, 2043, 2047,
@@ -1086,6 +1072,7 @@ static const uint16_t golden_adc_normal[GOLDEN_N_SAMPLES_NORMAL] = {
     2060, 2052, 2048, 2047, 2049, 2052, 2052, 2049, 2045, 2045, 2047, 2049, 2054, 2058, 2056, 2054,
 };
 
+/** @brief Expected MFCC output (match within 1e-3). */
 static const float golden_expected_normal[GOLDEN_N_FRAMES_NORMAL][GOLDEN_N_OUT_NORMAL] = {
     { 0.22329604f, -0.10697274f, -0.72400246f, -0.58265205f, -1.65724268f, -1.41481001f, -0.13363938f, -0.78823675f, -1.90913855f, -0.42632459f, -2.62619842f, -1.69300423f },
     { 0.05886978f, 0.33284240f, -0.36692931f, -1.20942853f, -2.02634738f, -0.81076304f, 0.13282205f, -0.41987764f, -1.61525850f, -2.62856281f, -0.80754120f, -0.04575749f },
@@ -1154,4 +1141,4 @@ static const float golden_expected_normal[GOLDEN_N_FRAMES_NORMAL][GOLDEN_N_OUT_N
     { 0.27907217f, 0.61731489f, -0.85958939f, -1.43216235f, -0.53419843f, -0.55607819f, 0.04750559f, -0.81940538f, -0.34874656f, -0.61923212f, -1.10442463f, -1.76706324f },
 };
 
-#endif // GOLDEN_VECTOR_NORMAL_H
+#endif

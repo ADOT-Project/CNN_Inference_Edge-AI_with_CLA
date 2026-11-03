@@ -1,17 +1,12 @@
-/*
- * version.h
- *
- *  Created on: Oct 4, 2026
- *      Author: canberk
+/**
+ * @file version.h
+ * @brief Firmware version number.
  */
-
 #ifndef APPLICATION_INCLUDE_VERSION_H_
 #define APPLICATION_INCLUDE_VERSION_H_
 
+#define MAJOR_VERSION 2 /**< Major version. */
+#define MINOR_VERSION 0 /**< Minor version. */
+#define MICRO_VERSION 0 /**< Patch version. */
 
-#define MAJOR_VERSION 2
-#define MINOR_VERSION 0
-#define MICRO_VERSION 0
-
-
-#endif /* APPLICATION_INCLUDE_VERSION_H_ */
+#endif

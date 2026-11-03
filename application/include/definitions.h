@@ -1,82 +1,46 @@
-/*
- * definitions.h
- *
- *  Created on: Feb 11, 2026
- *      Author: canbe
+/**
+ * @file definitions.h
+ * @brief Network sizes and quantization scales.
+ * @note ADOT export updates the values; comments are kept.
  */
-
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
 
+#define IMAGE_H              65 /**< Input frames. */
+#define IMAGE_W              12 /**< Features per frame. */
+#define NUM_FILTERS          12 /**< Filters per conv layer. */
+#define NUM_CLASSES          2 /**< Output classes. */
 
+#define FILTER_SIZE          3 /**< 3x3 kernels. */
 
-// GUNCELLEME: Prepare_features.py'de SLICE_LEN 8448->16896'ya (0.528s->1.056s,
-// 32->65 cerceve) cikarildi -- dosya-bazli 5-fold CV'de macro-F1'i
-// 0.979+-0.029'dan 0.991+-0.011'e iyilestirdigi icin (bkz. egitim tarafi
-// notlari). IMAGE_H bu yuzden 32 degil 65. IMAGE_W (MFCC katsayi sayisi)
-// degismedi.
-#define IMAGE_H              65   // 65 (eskiden 32)
-#define IMAGE_W              12   // 12
-#define NUM_FILTERS          12  // 6
-#define NUM_CLASSES          2  // Healthy=0, Bearing=1, Propeller=2
+#define CONV1_OUT_H          (IMAGE_H - FILTER_SIZE + 1)
+#define CONV1_OUT_W          (IMAGE_W - FILTER_SIZE + 1)
+#define POOL1_OUT_H          (CONV1_OUT_H / 2) /**< 2x1 pool halves H only. */
+#define POOL1_OUT_W          (CONV1_OUT_W)
 
-#define FILTER_SIZE          3  // 3x3
+#define CONV2_OUT_H          (POOL1_OUT_H - FILTER_SIZE + 1)
+#define CONV2_OUT_W          (POOL1_OUT_W - FILTER_SIZE + 1)
+#define POOL2_OUT_H          (CONV2_OUT_H / 2)
+#define POOL2_OUT_W          (CONV2_OUT_W)
 
-// --- 1. Katman Boyutları (Conv1 -> Pool1) ---
-// Valid Convolution: (Girdi - Filtre + 1)
-#define CONV1_OUT_H          (IMAGE_H - FILTER_SIZE + 1)  // 30
-#define CONV1_OUT_W          (IMAGE_W - FILTER_SIZE + 1)  // 10
-// 2x1 Pooling: SADECE yükseklik (H) yarıya iner, Genişlik (W) sabit kalır!
-#define POOL1_OUT_H          (CONV1_OUT_H / 2)            // 15
-#define POOL1_OUT_W          (CONV1_OUT_W)                // 10
+#define CONV1_SIZE           (NUM_FILTERS * CONV1_OUT_H * CONV1_OUT_W)
+#define POOL1_SIZE           (NUM_FILTERS * POOL1_OUT_H * POOL1_OUT_W)
+#define CONV2_SIZE           (NUM_FILTERS * CONV2_OUT_H * CONV2_OUT_W)
 
-// --- 2. Katman Boyutları (Conv2 -> Pool2) ---
-#define CONV2_OUT_H          (POOL1_OUT_H - FILTER_SIZE + 1) // 13
-#define CONV2_OUT_W          (POOL1_OUT_W - FILTER_SIZE + 1) // 8
-// 2x1 Pooling: SADECE yükseklik (H) yarıya iner
-#define POOL2_OUT_H          (CONV2_OUT_H / 2)               // 6
-#define POOL2_OUT_W          (CONV2_OUT_W)                   // 8
+#define DENSE_LAYER_INPUT    (NUM_FILTERS * POOL2_OUT_H * POOL2_OUT_W) /**< Flattened pool2. */
+#define DENSE_LAYER_WEIGHTS  (DENSE_LAYER_INPUT * NUM_CLASSES)
 
-// --- Bellek (Workspace) Offset Hesaplamaları ---
-// Dizilerin kendi üzerine veya birbirinin üstüne (overwrite) yazmasını engellemek için
-// her bir çıktının boyutunu tam olarak hesaplıyoruz.
-#define CONV1_SIZE           (NUM_FILTERS * CONV1_OUT_H * CONV1_OUT_W) // 6 * 30 * 10 = 1800
-#define POOL1_SIZE           (NUM_FILTERS * POOL1_OUT_H * POOL1_OUT_W) // 6 * 15 * 10 = 900
-#define CONV2_SIZE           (NUM_FILTERS * CONV2_OUT_H * CONV2_OUT_W) // 6 * 13 * 8  = 624
+#define MAX_ELEMENTS         (POOL1_SIZE + DENSE_LAYER_INPUT) /**< Workspace size. */
 
-// Dense katmana giren düzleştirilmiş veri boyutu
-// GUNCELLEME: IMAGE_H 32->65 oldugu icin 288->672 (6*14*8), 864->2016 (672*3)
-#define DENSE_LAYER_INPUT    (NUM_FILTERS * POOL2_OUT_H * POOL2_OUT_W)  // 672
-#define DENSE_LAYER_WEIGHTS  (DENSE_LAYER_INPUT * NUM_CLASSES) // 672*3 = 2016
+#define INPUT_SCALE          256.0f /**< Float feature to int16 scale. */
 
-// GUNCELLEME (DUZELTME): eski formul CONV1_SIZE+POOL1_SIZE+CONV2_SIZE idi --
-// bu, conv1/conv2'nin HAVUZLANMAMIS (ham) ciktisini da workspace'te ayri
-// ayri saklayan eski (fused OLMAYAN) bir tasarimdan kalmaydi. Gercek
-// dense_layer.cla::conv1_pool_fused_cla/conv2_pool_fused_cla fonksiyonlari
-// havuzlanmamis ciktiyi HIC saklamiyor (her pooled deger, 2 satirlik
-// pencereden dogrudan, ara depolama olmadan hesaplaniyor) -- yani
-// workspace'in gercekte ihtiyaci olan tek sey POOL1_SIZE (pool1 ciktisi,
-// conv2'nin okudugu) + DENSE_LAYER_INPUT (=POOL2_SIZE, pool2 ciktisi = FC
-// girdisi). Eski (yanlis buyutulmus) formul CLA'nin dar RAMLS havuzunda
-// ~9000 byte bosa harcatiyordu -- bu da weight[]'in (4032 byte) CLA'da
-// kalmasini engelleyip FC'yi CPU'ya tasimamiza yol acmisti. Duzeltilince
-// FC yeniden CLA'da kalabiliyor (asagida dense_layer.cla'ya geri tasindi).
-#define MAX_ELEMENTS         (POOL1_SIZE + DENSE_LAYER_INPUT)
+#define CONV1_WEIGHT_SCALE   62409.6516900950f
+#define CONV1_BIAS_SCALE     81927.7231316791f
 
-// --- Kuantalama Ölçekleri (Scale Factors) ---
-// Float özellikleri int16'ya çevirmek için giriş çarpanı
-#define INPUT_SCALE          256.0f
+#define CONV2_WEIGHT_SCALE   44730.1129021142f
+#define CONV2_BIAS_SCALE     129072.7185597475f
 
-// GUNCELLEME: degerler artik export/dataset__eval_heldout_test/
-// model_weights_int16.h'dan (35 dosyayla egitilmis, 8 dosya gercekten
-// hic gorulmemis, tez icin secilen model -- full.npz'nin DEGIL).
-#define CONV1_WEIGHT_SCALE   63294.9633672878f
-#define CONV1_BIAS_SCALE     111785.3346656337f
+#define FC_WEIGHT_SCALE      66808.5913213575f
+#define FC_BIAS_SCALE        2479784.4514476163f
 
-#define CONV2_WEIGHT_SCALE   72807.7508819383f
-#define CONV2_BIAS_SCALE     181338.9918182240f
-
-#define FC_WEIGHT_SCALE      135266.1635793605f
-#define FC_BIAS_SCALE        1418270.6583524079f
-
-#endif /* DEFINITIONS_H_ */
+#endif
