@@ -1,0 +1,68 @@
+/**
+ * @file dense_layer.cla
+ * @brief CLA tasks running the stages set in cla_pipeline_config.h.
+ */
+#include <cla_dense_layer_shared.h>
+#include "F2837xD_device.h"
+#include "definitions.h"
+#include "cla_pipeline_config.h"
+
+#if CLA_STAGE_CONV1_POOL1
+#pragma CODE_SECTION(conv1_pool_fused_cla, "Cla1Prog")
+#define KFN_CONV1  conv1_pool_fused_cla
+#endif
+
+#if CLA_STAGE_CONV2_POOL2
+#pragma CODE_SECTION(conv2_pool_fused_cla, "Cla1Prog")
+#define KFN_CONV2  conv2_pool_fused_cla
+#endif
+
+#include "fused_kernels_opt.h"
+
+#if CLA_SINGLE_TASK
+
+/** @brief All stages in one task; GPIO67 low while it runs. */
+#pragma CODE_SECTION(Cla1Task1, "Cla1Prog")
+__interrupt void Cla1Task1(void)
+{
+    GpioDataRegs.GPCCLEAR.bit.GPIO67 = 1;
+
+    conv1_pool_fused_cla(input_image, workspace, conv1_weights, conv1_bias);
+
+    conv2_pool_fused_cla(workspace, &workspace[POOL1_SIZE], conv2_weights, conv2_bias);
+
+    K_DENSE_BODY(&workspace[POOL1_SIZE], weight, fc_bias, fResult)
+
+    GpioDataRegs.GPCSET.bit.GPIO67 = 1;
+}
+
+#else
+
+#if CLA_STAGE_CONV1_POOL1
+/** @brief conv1 + pool1 into workspace. */
+#pragma CODE_SECTION(Cla1Task1, "Cla1Prog")
+__interrupt void Cla1Task1(void)
+{
+    conv1_pool_fused_cla(input_image, workspace, conv1_weights, conv1_bias);
+}
+#endif
+
+#if CLA_STAGE_CONV2_POOL2
+/** @brief conv2 + pool2 into workspace[POOL1_SIZE]. */
+#pragma CODE_SECTION(Cla1Task2, "Cla1Prog")
+__interrupt void Cla1Task2(void)
+{
+    conv2_pool_fused_cla(workspace, &workspace[POOL1_SIZE], conv2_weights, conv2_bias);
+}
+#endif
+
+#if CLA_STAGE_DENSE
+/** @brief Dense layer into fResult. */
+#pragma CODE_SECTION(Cla1Task3, "Cla1Prog")
+__interrupt void Cla1Task3(void)
+{
+    K_DENSE_BODY(&workspace[POOL1_SIZE], weight, fc_bias, fResult)
+}
+#endif
+
+#endif

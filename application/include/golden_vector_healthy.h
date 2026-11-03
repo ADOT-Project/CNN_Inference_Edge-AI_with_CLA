@@ -1,26 +1,18 @@
+/**
+ * @file golden_vector_healthy.h
+ * @brief Golden ADC window, healthy class.
+ * @details Source: demo_test_files_normalized/Healthy_M3_1950_normalized.wav, samples 74752:91648.
+ */
 #ifndef GOLDEN_VECTOR_HEALTHY_H
 #define GOLDEN_VECTOR_HEALTHY_H
 
 #include <stdint.h>
 
-// Kaynak: demo_test_files_normalized/Healthy_M3_1950_normalized.wav (ornek 74752:91648)
-// librosa-vs-manuel (saf algoritma) farki: 4.94e-06
-// 12-bit kuantalamanin ekledigi sapma (bilgi): 2.84e-02
-//   ^ bu, temiz sinyale gore olculen kuantalama gurultusudur.
-//     golden_expected ASAGIDAKI adc kodlarindan hesaplandi, yani
-//     C kodunuz bu degerlere <1e-3 ile UYMALIDIR.
-// top_db kirpmasi bu dilimde: devre disi
-//
-// golden_adc[] = simule edilmis 12-bit ADC kodlari (0..4095,
-// orta-rail=2048 bias), FEAT_ADC_* sabitleriyle uyumlu.
-// C tarafinda: tamponun ortalamasini cikar, FEAT_ADC_SCALE ile
-// olcekle, MFCC zincirinden gecir, golden_expected ile karsilastir.
-// Hedef: max fark < 1e-3.
+#define GOLDEN_N_SAMPLES_HEALTHY 16896 /**< Raw ADC samples. */
+#define GOLDEN_N_FRAMES_HEALTHY  65 /**< MFCC frames. */
+#define GOLDEN_N_OUT_HEALTHY     12 /**< Coefficients per frame. */
 
-#define GOLDEN_N_SAMPLES_HEALTHY 16896
-#define GOLDEN_N_FRAMES_HEALTHY  65
-#define GOLDEN_N_OUT_HEALTHY     12
-
+/** @brief 12-bit ADC codes, mid-rail 2048. */
 static const uint16_t golden_adc_healthy[GOLDEN_N_SAMPLES_HEALTHY] = {
     2153, 2402, 2330, 1658, 1918, 2402, 1911, 2117, 2041, 1810, 2514, 2326, 2005, 1950, 2398, 2167,
     1578, 2286, 2434, 2229, 2330, 1741, 1539, 1922, 2117, 1618, 1647, 2651, 1950, 2073, 2084, 2120,
@@ -1080,6 +1072,7 @@ static const uint16_t golden_adc_healthy[GOLDEN_N_SAMPLES_HEALTHY] = {
     1506, 2395, 2536, 1842, 1940, 1578, 2070, 2322, 1524, 1932, 2308, 2265, 1694, 1799, 2377, 1976,
 };
 
+/** @brief Expected MFCC output (match within 1e-3). */
 static const float golden_expected_healthy[GOLDEN_N_FRAMES_HEALTHY][GOLDEN_N_OUT_HEALTHY] = {
     { 1.14022735f, -0.12731838f, -0.03471341f, 0.13644072f, 2.24114986f, -0.25818988f, 0.98296633f, 0.55931662f, 1.17494117f, -0.76450302f, 0.47348580f, 0.67024186f },
     { 0.63010938f, -0.24053441f, 0.00522266f, -0.16332916f, 0.94581612f, -0.94870098f, 1.04412137f, 0.07169970f, -0.36230184f, -2.17969714f, 0.67507667f, 1.71678901f },
@@ -1148,4 +1141,4 @@ static const float golden_expected_healthy[GOLDEN_N_FRAMES_HEALTHY][GOLDEN_N_OUT
     { 0.68140241f, -0.02218717f, -0.11145697f, 0.21033761f, 2.12114689f, -0.34643474f, 0.84996839f, 0.29312142f, 0.87141258f, -0.57294196f, 0.61876267f, 0.82884758f },
 };
 
-#endif // GOLDEN_VECTOR_HEALTHY_H
+#endif

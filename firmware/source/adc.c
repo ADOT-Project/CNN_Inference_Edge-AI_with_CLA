@@ -1,15 +1,10 @@
-/*
- * adc.c
- *
- *  Created on: Aug 10, 2026
- *      Author: canberk
+/**
+ * @file adc.c
+ * @brief ADC, ePWM trigger and DMA setup for audio capture.
  */
-
 #include "adc.h"
 
-//
-// adca1_isr - ePWM tetiklemesini kapatır
-//
+/** @brief Stops the ePWM trigger after the first conversion burst. */
 #pragma CODE_SECTION(adca1_isr, ".TI.ramfunc");
 __interrupt void adca1_isr(void)
 {
@@ -18,36 +13,34 @@ __interrupt void adca1_isr(void)
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }
 
-//
-// dmach1_isr - DMA 1024 veriyi doldurduğunda tetiklenir
-//
+/** @brief Marks the capture complete. */
 #pragma CODE_SECTION(dmach1_isr, ".TI.ramfunc");
 __interrupt void dmach1_isr(void)
 {
-    // ADC donanımı durdurulmaz, arka planda dairesel dönmeye devam eder.
-    done = 1; // Ana döngüye "Veri hazır" mesajı gönderir.
+    done = 1;
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP7;
 }
 
+/** @brief ePWM2 SOCA on counter zero, period 4000. */
 void ConfigureEPWM(void)
 {
     EPwm2Regs.TBCTL.all = 0x0000;
-    EPwm2Regs.TBPRD = 4000;//12499
+    EPwm2Regs.TBPRD = 4000;
     EPwm2Regs.AQCTLA.bit.ZRO = AQ_SET;
     EPwm2Regs.AQCTLA.bit.CAU = AQ_CLEAR;
-    EPwm2Regs.CMPA.bit.CMPA = 2000;//6250
+    EPwm2Regs.CMPA.bit.CMPA = 2000;
     EPwm2Regs.ETSEL.bit.SOCASEL = ET_CTR_ZERO;
     EPwm2Regs.ETPS.bit.SOCAPRD =  ET_1ST;
     EPwm2Regs.ETCNTINITCTL.bit.SOCAINITEN = 1;
 }
 
+/** @brief ADCA: 12-bit, single-ended, powered up. */
 void ConfigureADC(void)
 {
     EALLOW;
     AdcaRegs.ADCCTL2.bit.PRESCALE = 6;
 
-    // Set mode
     AdcSetMode(ADC_ADCA, ADC_RESOLUTION_12BIT, ADC_SIGNALMODE_SINGLE);
 
     AdcaRegs.ADCCTL1.bit.INTPULSEPOS = 1;
@@ -57,9 +50,14 @@ void ConfigureADC(void)
     EDIS;
 }
 
+/**
+ * @brief SOC0-15 on one channel, chained for continuous sampling.
+ * @param adcRegs ADC register block.
+ * @param channel Input channel.
+ */
 void SetupADCContinuous(volatile struct ADC_REGS * adcRegs, Uint16 channel)
 {
-    Uint16 acqps = 14; // 12-bit için
+    Uint16 acqps = 14;
 
     EALLOW;
     adcRegs->ADCSOC0CTL.bit.CHSEL  = channel;
@@ -122,18 +120,18 @@ void SetupADCContinuous(volatile struct ADC_REGS * adcRegs, Uint16 channel)
     adcRegs->ADCINTSEL1N2.bit.INT1CONT = 1;
     adcRegs->ADCINTSEL1N2.bit.INT2CONT = 1;
 
-    adcRegs->ADCINTSEL1N2.bit.INT1SEL = 0;  // End of SOC0
-    adcRegs->ADCINTSEL1N2.bit.INT2SEL = 15; // End of SOC15
+    adcRegs->ADCINTSEL1N2.bit.INT1SEL = 0;
+    adcRegs->ADCINTSEL1N2.bit.INT2SEL = 15;
 
     EDIS;
 }
 
+/** @brief DMA CH1: 16-word bursts from ADC results into adcData0. */
 void DMAInit(void)
 {
     DMAInitialize();
     DMACH1AddrConfig(adcData0, &AdcaResultRegs.ADCRESULT0);
 
-    // --- DMA 16-BİT DÜZELTMESİ YAPILDI ---
     DMACH1BurstConfig(15, 1, 1);
     DMACH1TransferConfig((RESULTS_BUFFER_SIZE / 16) - 1, -15, 1);
 
@@ -141,11 +139,11 @@ void DMAInit(void)
                         DMA_ADCAINT2,
                         PERINT_ENABLE,
                         ONESHOT_DISABLE,
-                        CONT_ENABLE,     // Sürekli dairesel mod
+                        CONT_ENABLE,
                         SYNC_DISABLE,
                         SYNC_SRC,
                         OVRFLOW_DISABLE,
-                        SIXTEEN_BIT,     // 32-bit'ten 16-bit'e çevrildi
+                        SIXTEEN_BIT,
                         CHINT_END,
                         CHINT_ENABLE
                     );

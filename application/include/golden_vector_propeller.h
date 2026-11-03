@@ -1,26 +1,18 @@
+/**
+ * @file golden_vector_propeller.h
+ * @brief Golden ADC window, propeller class.
+ * @details Source: demo_test_files_normalized/Propeller_M1_1400_normalized.wav, samples 74512:91408.
+ */
 #ifndef GOLDEN_VECTOR_PROPELLER_H
 #define GOLDEN_VECTOR_PROPELLER_H
 
 #include <stdint.h>
 
-// Kaynak: demo_test_files_normalized/Propeller_M1_1400_normalized.wav (ornek 74512:91408)
-// librosa-vs-manuel (saf algoritma) farki: 8.10e-06
-// 12-bit kuantalamanin ekledigi sapma (bilgi): 8.08e-02
-//   ^ bu, temiz sinyale gore olculen kuantalama gurultusudur.
-//     golden_expected ASAGIDAKI adc kodlarindan hesaplandi, yani
-//     C kodunuz bu degerlere <1e-3 ile UYMALIDIR.
-// top_db kirpmasi bu dilimde: devre disi
-//
-// golden_adc[] = simule edilmis 12-bit ADC kodlari (0..4095,
-// orta-rail=2048 bias), FEAT_ADC_* sabitleriyle uyumlu.
-// C tarafinda: tamponun ortalamasini cikar, FEAT_ADC_SCALE ile
-// olcekle, MFCC zincirinden gecir, golden_expected ile karsilastir.
-// Hedef: max fark < 1e-3.
+#define GOLDEN_N_SAMPLES_PROPELLER 16896 /**< Raw ADC samples. */
+#define GOLDEN_N_FRAMES_PROPELLER  65 /**< MFCC frames. */
+#define GOLDEN_N_OUT_PROPELLER     12 /**< Coefficients per frame. */
 
-#define GOLDEN_N_SAMPLES_PROPELLER 16896
-#define GOLDEN_N_FRAMES_PROPELLER  65
-#define GOLDEN_N_OUT_PROPELLER     12
-
+/** @brief 12-bit ADC codes, mid-rail 2048. */
 static const uint16_t golden_adc_propeller[GOLDEN_N_SAMPLES_PROPELLER] = {
     1995, 1993, 1986, 2125, 2047, 2098, 2039, 2009, 1964, 1965, 2124, 1969, 2055, 2147, 1974, 2002,
     2105, 2164, 2059, 2028, 2083, 1990, 2030, 2023, 2099, 2116, 2048, 2052, 2072, 2023, 2062, 2002,
@@ -1080,6 +1072,7 @@ static const uint16_t golden_adc_propeller[GOLDEN_N_SAMPLES_PROPELLER] = {
     2169, 2064, 1974, 2004, 2044, 2114, 1845, 2131, 2085, 2051, 1928, 1994, 2206, 2042, 2189, 2070,
 };
 
+/** @brief Expected MFCC output (match within 1e-3). */
 static const float golden_expected_propeller[GOLDEN_N_FRAMES_PROPELLER][GOLDEN_N_OUT_PROPELLER] = {
     { 1.27663378f, -1.18804012f, -0.08247587f, -0.38819373f, -1.08895962f, -0.04919250f, 0.79107696f, -1.04521440f, -1.07173999f, -0.60607330f, -0.29982396f, -0.74480378f },
     { 0.84094143f, -0.88437308f, -0.61360071f, -1.14631340f, -1.39742147f, -0.42514097f, -0.77689709f, -0.82768443f, -0.76562081f, 0.76655035f, -0.94068715f, -2.30786568f },
@@ -1148,4 +1141,4 @@ static const float golden_expected_propeller[GOLDEN_N_FRAMES_PROPELLER][GOLDEN_N
     { 1.68774956f, -0.72024073f, -1.81001723f, -1.61389612f, 0.75382254f, 0.25360545f, -0.79686361f, -1.15183783f, -1.50180117f, -0.88743615f, -0.46206150f, -0.91659675f },
 };
 
-#endif // GOLDEN_VECTOR_PROPELLER_H
+#endif
