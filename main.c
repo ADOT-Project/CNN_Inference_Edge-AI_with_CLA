@@ -44,6 +44,7 @@
   #endif
 #endif
 #include "adc.h"
+#include "sci_stream.h"
 
 #define INPUT_SIZE 2704 /**< Unused legacy size. */
 
@@ -355,6 +356,9 @@ static float features[FEAT_N_FRAMES][FEAT_N_OUT]; /**< MFCC output. */
 __interrupt void cla1Isr1();
 
 /** @brief Test input source, chosen by TEST_GOLDEN_ADC in test_inputs.h. */
+#if TEST_SCI_STREAM
+static unsigned int sci_adc[FEAT_SLICE_LEN]; /**< Window received over SCIA. */
+#endif
 #if TEST_GOLDEN_ADC == 2
 #define TEST_CYCLE_LEN        GOLDEN_N
 #define TEST_EXPECTED(i)      golden_labels[i]
@@ -377,7 +381,9 @@ static const char *const golden_names[NUM_CLASSES] = { "Healthy", "Bearing", "Pr
 #define TEST_CLASS_NAME(c)    golden_names[c]
 #define TEST_GOLDEN_SLICE(i)  ((const unsigned int*)golden_inputs[i])
 #else
+#if !TEST_SCI_STREAM  /* one window buffer is enough: SCI mode has its own */
 static unsigned int test_adc[FEAT_SLICE_LEN];
+#endif
 #define TEST_CYCLE_LEN        TEST_N_INPUTS
 #define TEST_EXPECTED(i)      test_labels[i]
 #define TEST_CLASS_NAME(c)    test_class_names[c]
@@ -487,7 +493,10 @@ int main(void)
 
     static uint16_t golden_cycle_idx = 0;
 
-#if !TEST_GOLDEN_ADC
+#if TEST_SCI_STREAM
+    sci_stream_init();
+#endif
+#if !TEST_GOLDEN_ADC && !TEST_SCI_STREAM
     {
         uint32_t lcg = 12345UL;
         uint32_t n;
@@ -502,10 +511,14 @@ int main(void)
      {
         GPIO_WritePin(18, 0);
         static uint32_t f,o;
+#if TEST_SCI_STREAM
+        g_expected_class = sci_stream_receive(sci_adc);   /* blocks */
+        mfcc_extract(sci_adc, features);
+#elif TEST_GOLDEN_ADC
         g_expected_class = TEST_EXPECTED(golden_cycle_idx);
-#if TEST_GOLDEN_ADC
         mfcc_extract(TEST_GOLDEN_SLICE(golden_cycle_idx), features);
 #else
+        g_expected_class = TEST_EXPECTED(golden_cycle_idx);
         mfcc_extract(test_adc, features);
 #endif
 
@@ -520,7 +533,7 @@ int main(void)
                 }
         GPIO_WritePin(18, 1);
 
-#if !TEST_GOLDEN_ADC
+#if !TEST_GOLDEN_ADC && !TEST_SCI_STREAM
         {
             const int16_t *src = test_inputs[golden_cycle_idx];
             uint16_t n;
@@ -530,8 +543,15 @@ int main(void)
 
         GPIO_WritePin(19, 0);
 
-        run_inference(TEST_EXPECTED(golden_cycle_idx));
+        run_inference(g_expected_class);
         GPIO_WritePin(19, 1);
+
+#if TEST_SCI_STREAM
+  #if CLA_SINGLE_TASK
+        while (!cla_done) {}   /* single task: the result is not in yet */
+  #endif
+        sci_stream_send_result(fResult);
+#endif
 
         golden_cycle_idx++;
         if (golden_cycle_idx >= TEST_CYCLE_LEN) golden_cycle_idx = 0;

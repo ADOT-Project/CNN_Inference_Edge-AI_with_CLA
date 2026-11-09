@@ -1,6 +1,6 @@
 The model files in this folder were copied by ADOT from the last export; every export overwrites them.
-date    : 2026-11-08 20:04:32
-export  : C:\Users\Canberk_Kaplan\Desktop\Bildiri_SIU_2026\Model_Trainig_For_Edge_AI\export\dataset__eval_heldout_test__20261108_195831
+date    : 2026-11-09 18:59 (restored by hand)
+export  : C:\Users\Canberk_Kaplan\Desktop\Bildiri_SIU_2026\Model_Trainig_For_Edge_AI\export\dataset__eval_heldout_test__20261109_183925
 dataset : dataset.npz
 channels: 12
 files   : application/include/definitions.h, application/include/weights.h, main.c, application/include/cla_pipeline_config.h, application/include/feature_tables.h, application/include/test_inputs.h, application/include/golden_vectors.h
