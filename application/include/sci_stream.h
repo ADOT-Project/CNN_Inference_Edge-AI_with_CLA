@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 #ifndef TEST_SCI_STREAM
-#define TEST_SCI_STREAM 0 /**< 1: windows come over SCIA, not the ADC. */
+#define TEST_SCI_STREAM 1 /**< 1: windows come over SCIA, not the ADC. */
 #endif
 
 /** BRR = LSPCLK / (8 * baud) - 1, LSPCLK = 50 MHz (SYSCLK / 4):

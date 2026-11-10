@@ -5,12 +5,12 @@
  * @par Timing (model, not measured)
  * - Target: TMS320F28379D (C28x 200 MHz, CLA 200 MHz)
  * - Features: 35.00 ms (measured)
- * - Cycles/MAC: 9 CLA, 8 C28x (model), held-out error -0.0..+0.6% (-O0)
- * - S1: 4.500 ms on CLA, 66,960 MAC (other side 4.293 ms)
- * - S2: 12.416 ms on CLA, 290,304 MAC (other side 10.151 ms)
- * - S3: 0.110 ms on CLA, 2,688 MAC (other side 0.087 ms)
- * - Latency 52.03 ms, period 35.00 ms (CLA overlaps 17.026 ms)
- * - Feature extraction is 67% of the frame (35.0 ms vs 17.03 ms of inference) and every stage is already on the CLA, so the CLA runs this window's network while the C28x starts the next window's features. A new result every 35.0 ms instead of 52.0 ms.
+ * - Cycles/MAC: 10 CLA, 8 C28x (model), held-out error -0.0..+0.6% (-O0)
+ * - S1: 3.750 ms on CLA, 55,800 MAC (other side 3.578 ms)
+ * - S2: 8.712 ms on CLA, 201,600 MAC (other side 7.156 ms)
+ * - S3: 0.137 ms on CLA, 3,360 MAC (other side 0.109 ms)
+ * - Latency 47.60 ms, period 35.00 ms (CLA overlaps 12.599 ms)
+ * - Feature extraction is 74% of the frame (35.0 ms vs 12.60 ms of inference) and every stage is already on the CLA, so the CLA runs this window's network while the C28x starts the next window's features. A new result every 35.0 ms instead of 47.6 ms.
  */
 #ifndef CLA_PIPELINE_CONFIG_H
 #define CLA_PIPELINE_CONFIG_H
