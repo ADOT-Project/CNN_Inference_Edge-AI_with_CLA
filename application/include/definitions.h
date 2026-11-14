@@ -6,10 +6,10 @@
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
 
-#define IMAGE_H              65 /**< Input frames. */
-#define IMAGE_W              12 /**< Features per frame. */
-#define NUM_FILTERS          10 /**< Filters per conv layer. */
-#define NUM_CLASSES          3 /**< Output classes. */
+#define IMAGE_H              18 /**< Input frames. */
+#define IMAGE_W              16 /**< Features per frame. */
+#define NUM_FILTERS          9 /**< Filters per conv layer. */
+#define NUM_CLASSES          4 /**< Output classes. */
 
 #define FILTER_SIZE          3 /**< 3x3 kernels. */
 
@@ -34,13 +34,13 @@
 
 #define INPUT_SCALE          256.0f /**< Float feature to int16 scale. */
 
-#define CONV1_WEIGHT_SCALE   91629.3806692070f
-#define CONV1_BIAS_SCALE     119439.0168657339f
+#define CONV1_WEIGHT_SCALE   43209.2278258357f
+#define CONV1_BIAS_SCALE     115683.8645035580f
 
-#define CONV2_WEIGHT_SCALE   233378.9430777512f
-#define CONV2_BIAS_SCALE     289518.4460025151f
+#define CONV2_WEIGHT_SCALE   82800.8648321033f
+#define CONV2_BIAS_SCALE     136552.0271231640f
 
-#define FC_WEIGHT_SCALE      480672.2083924987f
-#define FC_BIAS_SCALE        1310018.3231597866f
+#define FC_WEIGHT_SCALE      111856.1515796550f
+#define FC_BIAS_SCALE        316253.0481401678f
 
 #endif
